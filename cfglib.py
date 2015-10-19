@@ -572,6 +572,17 @@ condense_opts = [
                       "`nodes_file`, and `group_file` config options.")),
     cfg.IntOpt('precision', default=85)]
 
+collect = cfg.OptGroup(name='collect',
+                       title="options for collection")
+
+collect_opts = [
+    cfg.StrOpt('flavors_file', default='compute_info/flavors.json'),
+    cfg.StrOpt('nodes_file', default='compute_info/nodes.json'),
+    cfg.StrOpt('vms_file', default='compute_info/vms.json'),
+    cfg.StrOpt('aggregates_file', default='compute_info/aggregates.json'),
+    cfg.StrOpt('server_groups_file', default='compute_info/server_groups.yaml')
+]
+
 database = cfg.OptGroup(name="database",
                         title="options for database")
 
@@ -605,6 +616,7 @@ cfg_for_reg = [
     (import_rules, import_rules_opts),
     (initial_check, initial_check_opts),
     (condense, condense_opts),
+    (collect, collect_opts),
     (database, database_opts),
     (import_rules, import_rules_opts)
 ]

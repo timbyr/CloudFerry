@@ -28,6 +28,8 @@ from condensation import utils as condense_utils
 from condensation.action import get_freed_nodes
 from condensation.scripts import nova_collector
 
+from collection import nova
+
 import data_storage
 from dry_run import chain
 from evacuation import evacuation_chain
@@ -190,6 +192,23 @@ def get_condensation_info(name_config=None):
     cfglib.collector_configs_plugins()
     cfglib.init_config(name_config)
     nova_collector.run_it(cfglib.CONF)
+
+
+@task
+def get_nova_info(name_config=None):
+    """
+    Before condensation or migration takes place, this will save data in nova
+    that would be lost as part of the process. (eg. Host aggregate members,
+    server group members)
+    This will allow manual or automated restore of this data post migration.
+
+    Method arguments:
+     :config: - path to CloudFerry configuration file (based on
+                `configs/config.ini`)
+    """
+    cfglib.collector_configs_plugins()
+    cfglib.init_config(name_config)
+    nova.collect(cfglib.CONF)
 
 
 @task
