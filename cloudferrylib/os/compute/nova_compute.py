@@ -388,7 +388,8 @@ class NovaCompute(compute.Compute):
                                'swap': compute_obj.swap,
                                'rxtx_factor': compute_obj.rxtx_factor,
                                'is_public': compute_obj.is_public,
-                               'tenants': tenants},
+                               'tenants': tenants,
+                               'metadata': compute_obj.get_keys()},
                     'meta': {}}
 
         elif isinstance(compute_obj,
@@ -498,7 +499,8 @@ class NovaCompute(compute.Compute):
                          flavor['ephemeral'] == dest_flavor.ephemeral and
                          flavor['is_public'] == dest_flavor.is_public and
                          flavor['rxtx_factor'] == dest_flavor.rxtx_factor and
-                         flavor['swap'] == dest_flavor.swap)
+                         flavor['swap'] == dest_flavor.swap and
+                         flavor['metadata'] == dest_flavor.get_keys())
             if identical:
                 LOG.debug("Identical flavor '%s' already exists, skipping.",
                           flavor['name'])
@@ -526,7 +528,8 @@ class NovaCompute(compute.Compute):
             ephemeral=flavor['ephemeral'],
             swap=int(flavor['swap']) if flavor['swap'] else 0,
             rxtx_factor=flavor['rxtx_factor'],
-            is_public=flavor['is_public'])
+            is_public=flavor['is_public'],
+            metadata=flavor['metadata'])
 
     def _deploy_flavors(self, flavors, tenant_map):
         dest_flavors = {flavor.name: flavor.id
@@ -777,8 +780,11 @@ class NovaCompute(compute.Compute):
     def get_flavor_list(self, **kwargs):
         return self.nova_client.flavors.list(**kwargs)
 
-    def create_flavor(self, **kwargs):
-        return self.nova_client.flavors.create(**kwargs)
+    def create_flavor(self, metadata=None, **kwargs):
+        flavor = self.nova_client.flavors.create(**kwargs)
+        if metadata:
+            flavor.set_keys(metadata)
+        return flavor
 
     def delete_flavor(self, flavor_id):
         self.nova_client.flavors.delete(flavor_id)

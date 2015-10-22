@@ -54,7 +54,8 @@ class CheckCloud(action.Action):
                     'disk': '1',
                     'ephemeral': '1',
                     'swap': '1',
-                    'rxtx_factor': '1'
+                    'rxtx_factor': '1',
+                    'metadata': {}
                 },
                 'meta': {
                     'id': flavor_id
