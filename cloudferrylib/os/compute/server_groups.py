@@ -22,7 +22,7 @@ Example:
 """
 
 import pprint
-
+import ipdb
 from novaclient import exceptions as nova_exc
 
 from cloudferrylib.base.resource import Resource
@@ -71,6 +71,43 @@ class Handler(Resource):
         """
         return self.compute.nova_client
 
+    def _get_instance_id_from_old_id(self, info, old_id):
+        for uuid, instance in info['instances'].iteritems():
+            if instance['old_id'] == old_id:
+                return uuid
+        return None
+
+    def update_server_group_members(self, info, server_groups):
+        if info and server_groups:
+            for server_group in server_groups:
+                sql = "select id from instance_groups where uuid='{0}'".format(
+                    server_group['uuid'])
+                gid = self._execute(sql).fetchone()[0]
+                for member in server_group['members']:
+                    uuid = self._get_instance_id_from_old_id(info, member)
+                    if uuid:
+                        sql = ("INSERT INTO instance_group_member "
+                               "(group_id, instance_id, deleted) "
+                               "VALUES({0}, '{1}', 0)").format(
+                                   gid,
+                                   uuid)
+                        self._execute(sql)
+
+    def get_colocated_instances(self):
+        client = self._nova_client.client
+        servers = client.servers.list(detailed=True,
+                                      search_opts={'all_tenants': True})
+
+        hypervisor_map = {}
+        for server in servers:
+            pass
+
+        ipdb.set_trace()
+        return []
+
+    def migrate(self, instances):
+        pass
+
     def get_server_groups(self):
         """
         Return list of dictionaries containing server group details
@@ -101,12 +138,19 @@ class Handler(Resource):
                 policies = []
                 for policy in self._execute(sql).fetchall():
                     policies.append(policy[0])
+                sql = "select instance_id from instance_group_member where \
+                    group_id=%s and deleted=0;" % row[4]
+                members = []
+                for member in self._execute(sql).fetchall():
+                    members.append(member[0])
+
                 groups.append(
                     {"user": identity_res.try_get_username_by_id(row[0]),
                      "tenant": identity_res.try_get_tenant_name_by_id(row[1]),
                      "uuid": row[2],
                      "name": row[3],
-                     "policies": policies})
+                     "policies": policies,
+                     "members": members})
         except nova_exc.NotFound:
             LOG.info("Cloud does not support server_groups")
         return groups

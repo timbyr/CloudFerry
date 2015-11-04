@@ -110,3 +110,4 @@ tasks:
    verify_vms: ['VerifyVms', src_cloud]
    act_filter_similar_vms_from_dst: ['FilterSimilarVMsFromDST', 'dst_cloud']
    act_server_group_trans: ['ServerGroupTransporter']
+   act_migrate_colocated_instances: ['MigrateColocatedInstances']

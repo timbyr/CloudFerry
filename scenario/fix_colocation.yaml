@@ -1,0 +1,13 @@
+namespace:
+  info_result:
+      instances: {}
+
+preparation:
+  - create_snapshot: True
+
+rollback:
+  - restore_from_snapshot: True
+
+process:
+  - enforce_group_policies:
+      - act_migrate_colocated_instances: True
